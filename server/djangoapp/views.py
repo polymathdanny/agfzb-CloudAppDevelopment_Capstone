@@ -66,7 +66,7 @@ def registrationPage(request):
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
     if request.method == "GET":
-        url = 'http://tkrug1.mybluemix.net/api/dealerships/'
+        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/dealerships/'
 
         # Get dealers from the URL
         dealerships = get_dealers_from_dict(url)
@@ -98,7 +98,7 @@ def get_dealerships(request):
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships_by_id(request, pk, val):
     if request.method == "GET":
-        url = 'http://tkrug1.mybluemix.net/api/dealerships/' + pk +'/' + val + '/'
+        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/dealerships/' + pk +'/' + val + '/'
         print(url)
         # Get dealers from the URL
         dealerships = get_dealers_from_cf(url)
@@ -109,7 +109,7 @@ def get_dealerships_by_id(request, pk, val):
 
 def get_dealerships_by_state(request, val):
     if request.method == "GET":
-        url = 'http://tkrug1.mybluemix.net/api/dealerships/state/' + val + '/'
+        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/dealerships/state/' + val + '/'
         # Get dealers from the URL
         dealerships = get_dealers_from_dict(url)
         states = get_dealerships_by_states_from_dict(url)
@@ -156,9 +156,9 @@ def add_review(request):
         form = CreateReviewForm(request.POST)
         if form.is_valid():
             myDict = {
-                "COUCH_URL": "https://59e8d0a8-4b92-4e5f-b6e9-97065c14665c-bluemix.cloudantnosqldb.appdomain.cloud",
-                "IAM_API_KEY": "gmRktU8iPRLIMuP7TU0KxMV0bJZ3VYKw7opsQpCqCGEW",
-                "COUCH_USERNAME": "59e8d0a8-4b92-4e5f-b6e9-97065c14665c-bluemix"
+                "COUCH_URL": "https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudantnosqldb.appdomain.cloud",
+                "IAM_API_KEY": "WFGtu2LO6Ng7oLDafSfQNv0bYGvbVbJ76Y6jwguVeE39",
+                "COUCH_USERNAME": "98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix"
             }
 
             client = Cloudant.iam(
@@ -201,7 +201,7 @@ def add_review(request):
 
         review_id = str(request.GET.get('dealership'))
         print(review_id)
-        url = 'http://tkrug1.mybluemix.net/api/reviews/dealership/' + review_id 
+        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/reviews/dealership/' + review_id 
         print(url)
         reviews = get_reviews_from_dict(url)
         form = CreateReviewForm()

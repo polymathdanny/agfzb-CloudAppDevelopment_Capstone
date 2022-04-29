@@ -1,7 +1,7 @@
   applications:
   - name: djangoapp
     routes:
-      - route: polymathdanny.mybluemix.net
+      - route: sentiment-analyzer.mybluemix.net
     memory: 128M
     buildpack: python_buildpack
   - name: djangoapp-nginx

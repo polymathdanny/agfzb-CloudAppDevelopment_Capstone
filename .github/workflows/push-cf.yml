@@ -20,7 +20,7 @@ jobs:
     name: Setup, Build, Publish, and Deploy
     runs-on: ubuntu-latest
 
-   steps:
+    steps:
       - uses: actions/checkout@v2
       - name: Install IBM CLI
         run: |

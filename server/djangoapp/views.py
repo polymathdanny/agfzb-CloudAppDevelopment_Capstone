@@ -156,7 +156,7 @@ def add_review(request):
         form = CreateReviewForm(request.POST)
         if form.is_valid():
             myDict = {
-                "COUCH_URL": "https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudantnosqldb.appdomain.cloud",
+                "COUCH_URL": "https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudant.com/",
                 "IAM_API_KEY": "WFGtu2LO6Ng7oLDafSfQNv0bYGvbVbJ76Y6jwguVeE39",
                 "COUCH_USERNAME": "98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix"
             }

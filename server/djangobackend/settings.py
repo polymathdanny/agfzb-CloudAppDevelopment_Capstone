@@ -27,7 +27,7 @@ DEBUG = True
 
 APPEND_SLASH = True
 
-ALLOWED_HOSTS = ['capstone17.us-south.cf.appdomain.cloud','127.0.0.1']
+ALLOWED_HOSTS = ['https://djangoapp1.us-south.cf.appdomain.cloud/','127.0.0.1','http://djangoapp1.us-south.cf.appdomain.cloud/']
 
 
 # Application definition

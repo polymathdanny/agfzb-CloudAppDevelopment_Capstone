@@ -42,11 +42,11 @@ def loginPage(request):
                 messages.info(request, 'Username OR Password is incorrect')
 
         context = {}
-        return render(request, 'djangoapp1/login.html', context)
+        return render(request, 'djangoapp/login.html', context)
 
 def logoutPage(request):
     logout(request)
-    return redirect('djangoapp1:login')
+    return redirect('djangoapp:login')
 
 # Create a `registration_request` view to handle sign up request
 def registrationPage(request):
@@ -61,7 +61,7 @@ def registrationPage(request):
             return redirect('djangoapp1:login')
 
     context = {'form':form}
-    return render(request, 'djangoapp1/registration.html', context)
+    return render(request, 'djangoapp/registration.html', context)
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
@@ -88,7 +88,7 @@ def get_dealerships(request):
 
         context = {'dealers': dealers, 'states':states}
 
-        return render(request, 'djangoapp1/index.html', context)
+        return render(request, 'djangoapp/index.html', context)
         #return HttpResponse(dealerships)
 
 
@@ -129,17 +129,17 @@ def get_dealerships_by_state(request, val):
         print(dealers)
         context = {'dealers': dealers, 'states': states}
 
-        return render(request, 'djangoapp1/index.html', context)
+        return render(request, 'djangoapp/index.html', context)
 
 def aboutPage(request):
     context = {}
     if request.method == "GET":
-        return render(request, 'djangoapp1/about.html', context)
+        return render(request, 'djangoapp/about.html', context)
 
 def contactPage(request):
     context = {}
     if request.method == "GET":
-        return render(request, 'djangoapp1/contact.html', context)
+        return render(request, 'djangoapp/contact.html', context)
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
 # def get_dealer_details(request, dealer_id):
@@ -190,11 +190,11 @@ def add_review(request):
             # create doc in cloudant db
             db.create_document(doc, throw_on_exists=False)
             messages.success(request, 'success!')
-            return redirect('djangoapp1:index')
+            return redirect('djangoapp:index')
         else:
             # Failed attempt to create review. Alert user and send to contact site.
             messages.error(request, 'Failure!')
-            return redirect('djangoapp1:contact')
+            return redirect('djangoapp:contact')
     else:
         car_makes = CarMake.objects.all()
         car_models = CarModel.objects.all()

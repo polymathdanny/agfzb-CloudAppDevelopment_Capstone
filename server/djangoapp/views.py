@@ -37,16 +37,16 @@ def loginPage(request):
 
             if user is not None:
                 login(request, user)
-                return redirect('djangoapp:index')
+                return redirect('djangoapp1:index')
             else: 
                 messages.info(request, 'Username OR Password is incorrect')
 
         context = {}
-        return render(request, 'djangoapp/login.html', context)
+        return render(request, 'djangoapp1/login.html', context)
 
 def logoutPage(request):
     logout(request)
-    return redirect('djangoapp:login')
+    return redirect('djangoapp1:login')
 
 # Create a `registration_request` view to handle sign up request
 def registrationPage(request):
@@ -58,15 +58,15 @@ def registrationPage(request):
             username = form.cleaned_data.get('username')
             messages.success(request, 'Account was created for ' + username)
 
-            return redirect('djangoapp:login')
+            return redirect('djangoapp1:login')
 
     context = {'form':form}
-    return render(request, 'djangoapp/registration.html', context)
+    return render(request, 'djangoapp1/registration.html', context)
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
     if request.method == "GET":
-        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/dealerships/'
+        url = 'https://djangoapp1.us-south.cf.appdomain.cloud/api/dealerships/'
 
         # Get dealers from the URL
         dealerships = get_dealers_from_dict(url)
@@ -88,7 +88,7 @@ def get_dealerships(request):
 
         context = {'dealers': dealers, 'states':states}
 
-        return render(request, 'djangoapp/index.html', context)
+        return render(request, 'djangoapp1/index.html', context)
         #return HttpResponse(dealerships)
 
 
@@ -98,7 +98,7 @@ def get_dealerships(request):
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships_by_id(request, pk, val):
     if request.method == "GET":
-        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/dealerships/' + pk +'/' + val + '/'
+        url = 'https://djangoapp1.us-south.cf.appdomain.cloud/api/dealerships/' + pk +'/' + val + '/'
         print(url)
         # Get dealers from the URL
         dealerships = get_dealers_from_cf(url)
@@ -109,7 +109,7 @@ def get_dealerships_by_id(request, pk, val):
 
 def get_dealerships_by_state(request, val):
     if request.method == "GET":
-        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/dealerships/state/' + val + '/'
+        url = 'https://djangoapp1.us-south.cf.appdomain.cloud/api/dealerships/state/' + val + '/'
         # Get dealers from the URL
         dealerships = get_dealers_from_dict(url)
         states = get_dealerships_by_states_from_dict(url)
@@ -129,17 +129,17 @@ def get_dealerships_by_state(request, val):
         print(dealers)
         context = {'dealers': dealers, 'states': states}
 
-        return render(request, 'djangoapp/index.html', context)
+        return render(request, 'djangoapp1/index.html', context)
 
 def aboutPage(request):
     context = {}
     if request.method == "GET":
-        return render(request, 'djangoapp/about.html', context)
+        return render(request, 'djangoapp1/about.html', context)
 
 def contactPage(request):
     context = {}
     if request.method == "GET":
-        return render(request, 'djangoapp/contact.html', context)
+        return render(request, 'djangoapp1/contact.html', context)
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
 # def get_dealer_details(request, dealer_id):
@@ -190,18 +190,18 @@ def add_review(request):
             # create doc in cloudant db
             db.create_document(doc, throw_on_exists=False)
             messages.success(request, 'success!')
-            return redirect('djangoapp:index')
+            return redirect('djangoapp1:index')
         else:
             # Failed attempt to create review. Alert user and send to contact site.
             messages.error(request, 'Failure!')
-            return redirect('djangoapp:contact')
+            return redirect('djangoapp1:contact')
     else:
         car_makes = CarMake.objects.all()
         car_models = CarModel.objects.all()
 
         review_id = str(request.GET.get('dealership'))
         print(review_id)
-        url = 'http://capstone17.us-south.cf.appdomain.cloud/api/reviews/dealership/' + review_id 
+        url = 'https://djangoapp1.us-south.cf.appdomain.cloud/api/reviews/dealership/' + review_id 
         print(url)
         reviews = get_reviews_from_dict(url)
         form = CreateReviewForm()

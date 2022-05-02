@@ -1,31 +1,140 @@
-{%  extends 'djangoapp/main.html' %}
-{% load static %}
-{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Dealership Review</title>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ MEDIA_URL }}css/styles.css"> 
+        <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+        <link href="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.css" rel="stylesheet">
+        <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/bootstrap-table.min.js"></script>
+        <script src="https://unpkg.com/bootstrap-table@1.18.2/dist/extensions/filter-control/bootstrap-table-filter-control.min.js"></script>
+    </head>
 
-<div>
-    <table class="table">
-      <thead>
-        <tr>
-          <th scope="col">Dealership</th>
-          <th scope="col">Address</th>
-          <th scope="col">City</th>
-          <th scope="col">State</th>
-          <th scope="col">Add Review</th>
-        </tr>
-      </thead>
-      <tbody>
-      {% for dealer in dealers %}
-        <tr>
-            <th scope="row">{{dealer.name}}</th>
-            <td>{{dealer.address}}</td>
-            <td>{{dealer.city}}</td>
-            <td>{{dealer.st}}</td>
-            <td><a class="btn btn-sm btn-info" href="{% url 'djangoapp:add_review' %}?dealership={{dealer.dealer_id}}">Add Review</a></td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-  </div>  
-</div>
+    <body>
+    
+        <!--Add a nav bar here -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'djangoapp:index' %}">Dealership Review</a>
+            </div>
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav mr-auto">
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'djangoapp:about' %}">About</a>
+                    </li>
+                    
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'djangoapp:contact' %}">Contact</a>
+                    </li>
+                
+                </ul>
+                
+            {% if user.is_authenticated %}
+                <form class="form-inline" action="{% url 'djangoapp:logout' %}">
+                    <label class="text-white mr-2">{{ user.username }}</label>
+                    <button class="btn btn-outline-light my-2 my-sm-0" type="submit" value="logout">Logout</button>
+                </form>
+            {% else %}
+                <form class="form-inline" action="{% url 'djangoapp:login' %}" method="post">
+                    {% csrf_token %}
+                    <input name="username" class="form-control mr-sm-2{% if error %} is-invalid{% endif %}" type="text" placeholder="Username" aria-label="Username" value="{{ username }}" required>
+                    <input name="psw" class="form-control mr-sm-2{% if error %} is-invalid{% endif %}" type="password" placeholder="Password" aria-label="Password" value="{{ password }}" required>
+                    <button id="loginSubmit" class="btn btn-light my-2 my-sm-0 mr-sm-2" type="submit" value="login">Login</button>
+                </form>
+                <form class="form-inline" action="{% url 'djangoapp:register' %}">
+                    <button class="btn btn-outline-light my-2 my-sm-0" type="submit" value="register">Sign Up</button>
+                </form>
+            {% endif %}
+            
+            </div>
+            
+        </nav>
 
-{% endblock %}
+        <main class="container">
+
+            <table class="table table-hover" id="table" data-filter-control="true">
+                
+                <caption style="caption-side: top;">Car Dealers</caption>
+                
+                <thead>
+                    <tr>
+                        <th data-field="id">ID</th>
+                        <th>Dealer</th>
+                        <th>City</th>
+                        <th>Address</th>
+                        <th>Zip</>
+                        <th data-field="state" data-filter-control="select">State</th>
+                    </tr>
+                </thead>
+                
+                <tbody>
+                    {% for dealer in dealerships %}
+                        <tr>
+                            <td>{{ dealer.id }}</td>
+                            <td>
+                                <a href="{% url 'djangoapp:dealer_details' dealer.id %}">{{ dealer.full_name }}</a>
+                            </td>
+                            <td>{{ dealer.city }}</td>
+                            <td>{{ dealer.address }}</td>
+                            <td>{{ dealer.zip }}</td>
+                            <td>{{ dealer.st }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            
+            </table>
+
+        </main>
+
+        <footer class="bg-dark text-light">
+            <div>
+                <!-- TODO -->
+            </div>
+            <div class="">
+                &copy; {% now 'Y' %} Copyright: <a href="{% url 'djangoapp:index' %}">Dealership Review</a>
+            </div>
+            <div class="mr-2">
+                <a href="{% url 'djangoapp:contact' %}">contact</a>
+            </div>
+        </footer>
+
+        {% if error %}
+            <script>
+                const username = document.querySelector('input[name="username"]');
+                const password = document.querySelector('input[name="psw"]');
+                
+                const clearWarning = () => {
+                    username.setCustomValidity('');
+                    password.setCustomValidity('');
+                    username.classList.remove("is-invalid");
+                    password.classList.remove("is-invalid");
+                }
+                
+                username.setCustomValidity('Invalid username/password');
+                password.setCustomValidity('Invalid username/password');
+                username.form.reportValidity();
+
+                username.addEventListener('input', clearWarning, false);
+                password.addEventListener('input', clearWarning, false);
+            </script>
+        {% endif %}
+
+        <script>
+            $(function() {
+                $('#table').bootstrapTable()
+            })
+        </script>
+
+    </body>
+
+</html>

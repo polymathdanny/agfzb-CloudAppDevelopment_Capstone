@@ -1,60 +1,86 @@
-{% load static %}
-
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Login</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.1/css/all.css" integrity="sha384-gfdkjb5BdAXd+lj+gudLWI+BXq4IuLW5IT+brZEZsLFm++aCMlF1V92rMkPaX4PP" crossorigin="anonymous">
-    </head>
-    <body>
-        <div class="container h-100">
-            <div class="d-flex">
-                <h3 id="form-title">Add Review</h3>
-            </div>
-            <div class="d-flex form_container">
-                <form method="POST" action="">
-                    {% csrf_token %}
-                    <div>
-                        {{form.name}} {{form.review}} Purchased? {{form.purchase}}
-                    </div>
-                    <button class="btn btn-primary" type="submit" value="Submit">Submit</button>
-                </form>
-            </div>
-        </div>
-        <table class="table">
-            <thead>
-              <tr>
-                <th scope="col">Name</th>
-                <th scope="col">Review</th>
-                <th scope="col">Purchase</th>
-                <th scope="col">Car</th>
-              </tr>
-            </thead>
-            <tbody>
-                {% for review in reviews %}
-                <tr>
-                    <td>{{review.name}}</td>
-                    <td>{{review.review}}</td>
-                    <td>{{review.purchase}}</td>
-                    <td>{{review.car_year}} {{review.car_make}} {{review.car_model}}</td>
-                </tr>
-              {% endfor %}
-            </tbody>
-        <script>
-            /* Because i didnt set placeholder values in forms.py they will be set here using vanilla Javascript
-            We start indexing at one because CSRF_token is considered and input field 
-            */
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% load static %}
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ MEDIA_URL }}css/styles.css">
+    
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/css/bootstrap-datepicker.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.5.0/js/bootstrap-datepicker.js"></script>
 
-            // Query All input fields
-            var form_fields = document.getElementsByTagName('input')
-            form_fields[1].placeholder='Name';
-            form_fields[2].placeholder='Review';
-            form_fields[3].placeholder='Purchase';
-            for (var field in form_fields){	
-                form_fields[field].className += ' form-control'
-            }
+</head>
+    <body>
+
+        <header class="container-fluid bg-warning pl-0">
+            <h1 class="d-block w-75 bg-dark text-white m-0 py-1 pr-5 pl-1" style="font-size: 1.6em; border-radius: 0 10vw 0 0;">
+                Add a review about <strong>{{ dealer.full_name }}</strong>
+            </h1>
+        </header>
+
+        <main>
+            <!--Add review form here -->
+            <section class="container-sm border p-3 rounded-lg mt-3 lead" style="max-width: 640px; border-color:#888;">
+                
+                <form method="post">
+                    
+                    {% csrf_token %}
+                    
+                    <div class="form-group">
+                        <label for="content">Enter the review content:</label>
+                        <textarea class="form-control" id="content" name="content" rows="2" required></textarea>
+                    </div>
+
+                    <div class="form-group" style="display: inline-flex; width: 100%; justify-content: space-between;">
+                        <label class="m-0" for="purchasecheck">Has purchased the car from {{ dealer.full_name }}?</label>
+                        <input class="form-control form-control-sm form-check-input my-auto mx-0 position-static" style="height: 2em; width: 2em; min-height: 2em; min-width: 2em;" type="checkbox" name="purchasecheck" id="purchasecheck">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="car">Select your car (model-make-year): </label>
+                        <select name="car" id="car" class="form-control form-select" required>
+                            {% for car in cars %}
+                                <option selected value={{car.id}}>{{car.name}}-{{car.car_make.name}}-{{ car.year }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="purchasedate">Select your Purchase Date:</label>
+                        <input class="date-own form-control" type="text" name="purchasedate" id="purchasedate">
+                    </div>
+                    
+                    <hr>
+
+                    <button class="btn btn-dark" type="submit">Publish</button>
+                    <button id="back" class="btn btn-outline-dark" type="button">Go back!</button>
+
+
+                </form>
+
+            </section>
+        </main>
+
+        <footer class="bg-dark text-light">
+            <div>
+                <!-- TODO -->
+            </div>
+            <div class="">
+                &copy; {% now 'Y' %} Copyright: <a href="{% url 'djangoapp:index' %}">Dealership Review</a>
+            </div>
+            <div class="mr-2">
+                <a href="#">contact</a>
+            </div>
+        </footer>
+    
+        <script type="text/javascript">
+            $('.date-own').datepicker({
+                format: 'mm/dd/yyyy'
+            });
+
+            document.querySelector("#back").addEventListener("click", ()=>{window.history.back();});
         </script>
     </body>
 </html>

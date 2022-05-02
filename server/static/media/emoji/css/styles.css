@@ -1,0 +1,80 @@
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    justify-content: space-between; 
+}
+body::after {
+    content: "";
+    position: fixed;
+    display: block;
+    height: 50%;
+    width: 50%;
+    right: 0;
+    bottom: 0;
+    background-image: url("/djangoapp/media/company/car-312278.svg");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    z-index: -1;
+}
+section {
+    margin: 0 0 2em 0;
+}
+section > p {
+    background-color: rgba(255, 255, 255, 0.5);
+    padding: 0.5em;
+    margin: 0;
+    text-align: justify;
+    font-size: 1.2em;
+}
+table {
+    font-size: 1.3em;
+    text-shadow: 0 0 6px #fff;
+}
+table p {
+    margin: 0.1em;
+}
+table strong {
+    font-weight: 500;
+    font-size: 110%;
+}
+main {
+    display: flex;
+    flex-direction: column;
+}
+footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+footer > div {
+    padding: 1em 0;
+}
+footer a {
+    color: #fff;
+    text-decoration: underline;
+}
+footer a:hover {
+    color: #eee;
+}
+form-inline input:not(.is-invalid), .form-inline input:not(.is-valid) {
+    padding-right: calc(1.5em + 0.75rem);
+}
+.error input {
+    border: 2px solid #000;
+    background-color: rgba(231, 128, 128, 0.1);
+}
+ul.errorlist {
+    background-color: rgba(231, 128, 128, 0.1);
+    display: block;
+    padding: 0.3em;
+    border: 2px dashed #000;
+}
+ul.errorlist li {
+    list-style-type: none;
+    margin: 0;
+}
+ul.errorlist li::before {
+    content: "Validation Error: "
+}

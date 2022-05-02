@@ -1,13 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"> 
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"> 
+        <link rel="stylesheet" href="{{ MEDIA_URL }}css/styles.css">
+        <meta charset="UTF-8"> 
+        <title>Product Review - Contact</title> 
+    </head> 
+    <body>
 
-{%  extends 'djangoapp/main.html' %}
-{% load static %}
-{% block content %}
+        <header class="container-fluid bg-warning pl-0">
+            <h1 class="d-block w-75 bg-dark text-white m-0 py-1 pr-5 pl-1" style="font-size: 1.6em; border-radius: 0 10vw 0 0;">
+                How you can reach us.
+            </h1>
+        </header>
 
+        <main class="mb-5">
 
-<html>
-    <h1>contact page</h1>
-    <h2>phone: 727-867-5309</h2>
-    <h2>address: 123 sesame st, new york, new york</h2>
-    </html>
+            <section class="d-block text-right">
+                <h2 class="d-inline-block bg-dark text-white py-1 pl-4 pr-1" style="border-radius: 0 0 0 10vw;">.contact us</h2>
+            </section>
 
-{% endblock %}
+            <section>
+                <i class="ml-2 lead">
+                    You like to contact us? Great. There are several channels how you can reach us! See the list below:
+                </i>
+            </section>
+
+            <section>
+                <table class="table">
+                    <tr>
+                        <th>
+                            Mail:
+                        </th>
+                        <td>
+                            <a href="mailto: mail@product-review.com">mail@product-review.com</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Phone:
+                        </th>
+                        <td>
+                            <a href="tel: +12345678901">1-234-567-8901</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Facebook:
+                        </th>
+                        <td>
+                            <a href="https://www.facebook.com">ProductReview</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Twitter:
+                        </th>
+                        <td>
+                            <a href="https://www.twitter.com">#ProductReview</a>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td class="lead font-italic"><br><br>Addresses:</td>
+                        <td></td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            Headquarters:
+                        </th>
+                        <td>
+                            <p><strong>S Grand Avenue</strong></p>
+                            <p>North Loup, NE</p>
+                            <p>68859  United States</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Regional Office Newark:
+                        </th>
+                        <td>
+                            <p><strong>9 Swathmore Court</strong></p>
+                            <p>Newark, DE</p>
+                            <p>19313  United States</p>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Regional Office Knoxville:
+                        </th>
+                        <td>
+                            <p><strong>27 Newbold Street</strong></p>
+                            <p>Knoxville, IA</p>
+                            <p>50138  United States</p>
+                        </td>
+                    </tr>
+                </table>
+            </section>
+
+        </main>
+
+        <footer class="bg-dark text-light">
+            <div>
+                <!-- TODO -->
+            </div>
+            <div class="">
+                &copy; {% now 'Y' %} Copyright: <a href="{% url 'djangoapp:index' %}">Dealership Review</a>
+            </div>
+            <div class="mr-2">
+                <a href="#">contact</a>
+            </div>
+        </footer>
+
+    </body> 
+</html> 

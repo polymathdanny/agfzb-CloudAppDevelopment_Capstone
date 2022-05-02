@@ -1,210 +1,238 @@
+from multiprocessing import context
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, render, redirect
-# from .models import related models
-# from .restapis import related methods
+from django.urls import reverse
+from .models import CarModel
+from .restapis import *
 from django.contrib.auth import login, logout, authenticate
 from django.contrib import messages
+from django import forms
+from django.core.exceptions import ObjectDoesNotExist
 from datetime import datetime
 import logging
 import json
 
-from .models import CarMake, CarModel
-
-from .restapis import *
-from zlib import DEF_BUF_SIZE
-from cloudant.client import Cloudant
-from cloudant.error import CloudantException
-
-from .forms import *
-from .decorators import *
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
 
+DEALERSHIPS_API_URL = 'https://ffc4210a.us-south.apigw.appdomain.cloud/api/dealership'
+REVIEWS_API_URL = 'https://ffc4210a.us-south.apigw.appdomain.cloud/api/review'
+
+# registration form
+class RegistrationForm(forms.Form):
+    '''Form class for user registration'''
+
+    error_css_class = 'error'
+    
+    username = forms.CharField(
+        max_length = 30,
+        label = 'Username',
+        required = True,
+        widget = forms.TextInput(
+            attrs = {
+                'placeholder': 'Enter User Name:',
+                'class': 'form-control',
+            },
+        ),
+    )
+    first_name = forms.CharField(
+        max_length = 30,
+        label = 'First Name',
+        required = True,
+        widget = forms.TextInput(
+            attrs = {
+                'placeholder': 'Enter First Name:',
+                'class': 'form-control',
+            },
+        ),
+    )
+    last_name = forms.CharField(
+        max_length = 30,
+        label = 'Last Name',
+        required = True,
+        widget = forms.TextInput(
+            attrs = {
+                'placeholder': 'Enter Last Name:',
+                'class': 'form-control',
+            },
+        ),
+    )
+    password = forms.CharField(
+        max_length = 30,
+        label = 'Password',
+        required = True,
+        widget = forms.PasswordInput(
+            attrs = {
+                'placeholder': 'Enter Password:',
+                'class': 'form-control',
+            },
+        ),
+    )
+
+
+
 # Create your views here.
 
+# Create an `about` view to render a static about page
+def about(request):
+    context = {}
+    return render(request, 'djangoapp/about.html', context)
+
+
+# Create a `contact` view to return a static contact page
+def contact(request):
+    context = {}
+    return render(request, 'djangoapp/contact.html', context)
+
+
 # Create a `login_request` view to handle sign in request
-def loginPage(request):
-    if request.user.is_authenticated:
-        return redirect('index') # note: may need to change this back to 'home' at some point
-    else:
-        if request.method == 'POST':
-            username = request.POST.get('username')
-            password = request.POST.get('password')
+def login_request(request):
+    context = {
+        'error': False 
+    }
+    if request.method == 'POST':
+        username = request.POST['username']
+        password = request.POST['psw']
+        user = authenticate(username=username, password=password)
 
-            user = authenticate(request, username=username, password=password)
+        context['dealerships'] = get_dealers_from_cf(DEALERSHIPS_API_URL)
+        
+        if user is not None:
+            login(request, user)
+        else:
+            context['error'] = True
+            context['username'] = username
+            context['password'] = password
+    return render(request, 'djangoapp/index.html', context)
 
-            if user is not None:
-                login(request, user)
-                return redirect('djangoapp:index')
-            else: 
-                messages.info(request, 'Username OR Password is incorrect')
 
-        context = {}
-        return render(request, 'djangoapp/login.html', context)
-
-def logoutPage(request):
+# Create a `logout_request` view to handle sign out request
+def logout_request(request):
     logout(request)
-    return redirect('djangoapp:login')
+    return redirect('djangoapp:index')
+
 
 # Create a `registration_request` view to handle sign up request
-def registrationPage(request):
-    form = CreateUserForm()
-    if request.method == 'POST':
-        form = CreateUserForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            username = form.cleaned_data.get('username')
-            messages.success(request, 'Account was created for ' + username)
-
-            return redirect('djangoapp:login')
-
-    context = {'form':form}
+def registration_request(request):
+    registration_form = RegistrationForm()
+    context = {
+        'form': registration_form
+    }
     return render(request, 'djangoapp/registration.html', context)
+
+
+# Sign up view
+def sign_up_request(request):
+    if request.method != 'POST':
+        return redirect('djangoapp:register')
+
+    registration_form = RegistrationForm(request.POST)
+
+    if registration_form.is_valid():
+
+        # get the cleaned form data 
+        form_data = registration_form.cleaned_data
+        
+        user_exist = False
+
+        try:
+            # Check if user already exists
+            User.objects.get(username=form_data['username'])
+            user_exist = True
+        except:
+            # If not, simply log this is a new user
+            logger.debug('{} is new user'.format(form_data['username']))
+        
+        # If it is a new user
+        if not user_exist:
+
+            # Create user in auth_user table
+            user = User.objects.create_user(
+                username=form_data['username'],
+                first_name=form_data['first_name'],
+                last_name=form_data['last_name'],
+                password=form_data['password']
+            )
+
+            # Login the user and redirect to index page
+            login(request, user)    
+            return redirect('djangoapp:index')
+        else:
+        
+            # Add error message to the form
+            registration_form.add_error('username', 'The user already exists.')
+    context = {
+        'form': registration_form
+    }
+    return render(request, 'djangoapp/registration.html', context)
+
 
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
-    if request.method == "GET":
-        url = 'https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudantnosqldb.appdomain.cloud/api/dealerships/'
-
-        # Get dealers from the URL
-        dealerships = get_dealers_from_dict(url)
-
-        states = get_dealerships_by_states_from_dict(url)
-        #print(states)
-        # Add relevant dealer info to list of dealer values
-
-        dealers = {}
-        for dealer in range(0, len(dealerships)):
-            dealers[dealer] = {
-                'dealer_id': dealerships[dealer].dealer_id,
-                'name': dealerships[dealer].full_name,
-                'address': dealerships[dealer].address,
-                'city': dealerships[dealer].city,
-                'state': dealerships[dealer].st
-            }
-        dealers = list(dealers.values())
-
-        context = {'dealers': dealers, 'states':states}
-
-        return render(request, 'djangoapp/index.html', context)
-        #return HttpResponse(dealerships)
-
-
-
-
-        
-# Update the `get_dealerships` view to render the index page with a list of dealerships
-def get_dealerships_by_id(request, pk, val):
-    if request.method == "GET":
-        url = 'https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudantnosqldb.appdomain.cloud/api/dealerships/' + pk +'/' + val + '/'
-        print(url)
-        # Get dealers from the URL
-        dealerships = get_dealers_from_cf(url)
-        # Concat all dealer's short name
-        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
-        # Return a list of dealer short name
-        return HttpResponse(dealer_names)
-
-def get_dealerships_by_state(request, val):
-    if request.method == "GET":
-        url = 'https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudantnosqldb.appdomain.cloud/api/dealerships/state/' + val + '/'
-        # Get dealers from the URL
-        dealerships = get_dealers_from_dict(url)
-        states = get_dealerships_by_states_from_dict(url)
-        #print(states)
-        # Add relevant dealer info to list of dealer values
-        dealers = {}
-        for dealer in range(0, len(dealerships)):
-            dealers[dealer] = {
-                'dealer_id': dealerships[dealer].dealer_id,
-                'name': dealerships[dealer].full_name,
-                'address': dealerships[dealer].address,
-                'city': dealerships[dealer].city,
-                'state': dealerships[dealer].st
-            }
-        dealers = list(dealers.values())
-        print('******DEALERS*******')
-        print(dealers)
-        context = {'dealers': dealers, 'states': states}
-
+    if request.method == 'GET':
+        context = {
+            'dealerships': get_dealers_from_cf(DEALERSHIPS_API_URL),
+        }
         return render(request, 'djangoapp/index.html', context)
 
-def aboutPage(request):
-    context = {}
-    if request.method == "GET":
-        return render(request, 'djangoapp/about.html', context)
-
-def contactPage(request):
-    context = {}
-    if request.method == "GET":
-        return render(request, 'djangoapp/contact.html', context)
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
-# def get_dealer_details(request, dealer_id):
-# ...
+def get_dealer_details(request, dealer_id):
+    if request.method == 'GET':
+
+        dealer = get_dealer_by_id(DEALERSHIPS_API_URL, dealer_id)
+        context = dict()
+
+        # Get reviews from url
+        context['dealer_id'] = dealer_id
+        context['dealer_name'] = f'Reviews for {dealer.full_name} ({dealer.city})'
+        context["reviews"] = get_dealer_reviews_from_cf(REVIEWS_API_URL, dealer_id)
+        return render(request, 'djangoapp/dealer_details.html', context)
+
 
 # Create a `add_review` view to submit a review
-# def add_review(request, dealer_id):
-# ...
-
-# Create a `registration_request` view to handle sign up request
-# Create a `registration_request` view to handle sign up request
-def add_review(request):
-    if request.method == 'POST':
-        form = CreateReviewForm(request.POST)
-        if form.is_valid():
-            myDict = {
-                "COUCH_URL": "https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudant.com/",
-                "IAM_API_KEY": "WFGtu2LO6Ng7oLDafSfQNv0bYGvbVbJ76Y6jwguVeE39",
-                "COUCH_USERNAME": "98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix"
+def add_review(request, dealer_id):
+    if request.user.is_authenticated:
+        if request.method == 'GET':
+            cars = CarModel.objects.all()
+            dealer = get_dealer_by_id(DEALERSHIPS_API_URL, dealer_id)
+            context = {
+                'cars': cars,
+                'dealer': dealer
             }
+            return render(request, 'djangoapp/add_review.html', context)
 
-            client = Cloudant.iam(
-                        account_name=myDict["COUCH_USERNAME"],
-                        api_key=myDict["IAM_API_KEY"],
-                        connect=True,
-            )
+            
+        elif request.method == 'POST': 
+            review = dict()
+            review['time'] = datetime.utcnow().isoformat()
+            review['purchase_date'] = request.POST.get("purchasedate", "")
+            review['name'] = request.user.get_full_name()
+            review['dealership'] = dealer_id
+            review['review'] = request.POST.get("content", "I have got nothing to say...")
+            review['purchase'] = bool(request.POST.get("purchasecheck", False));
 
-            dbName = 'reviews'
-            db = client[dbName]
+            car_id = request.POST.get("car", None)
 
-            # Get number of documents in reviews db. The next id will be incremented
-            i=0
-            for doc in db:
-                i = i+1
-            id = i+1
+            if car_id is not None:
+                try:
+                    car = CarModel.objects.get(id=car_id)
+                except ObjectDoesNotExist:
+                    car = None
 
-            # Get dealership id from url params
-            dealer_id = request.GET.get('dealership')
+                if car is not None:
+                    review['car_make'] = car.car_make.name
+                    review['car_model'] = car.name
+                    review['car_year'] = car.year
 
-            # Initialize new document for POST request
-            doc = {}
-            doc['id'] = id
-            doc['dealership'] = int(dealer_id)
-            doc['name'] = form['name'].data
-            doc['review'] = form['review'].data
-            doc['purchase'] = form['purchase'].data
+            json_payload = dict()
+            json_payload['review'] = review
 
-            # create doc in cloudant db
-            db.create_document(doc, throw_on_exists=False)
-            messages.success(request, 'success!')
-            return redirect('djangoapp:index')
-        else:
-            # Failed attempt to create review. Alert user and send to contact site.
-            messages.error(request, 'Failure!')
-            return redirect('djangoapp:contact')
-    else:
-        car_makes = CarMake.objects.all()
-        car_models = CarModel.objects.all()
+            response = post_request(REVIEWS_API_URL, json_payload)
+            
+            return redirect(reverse('djangoapp:dealer_details', args=[dealer_id]))
 
-        review_id = str(request.GET.get('dealership'))
-        print(review_id)
-        url = 'https://98ff71f8-4e54-4bcc-bfbd-e91475399743-bluemix.cloudantnosqldb.appdomain.cloud/api/reviews/dealership/' + review_id 
-        print(url)
-        reviews = get_reviews_from_dict(url)
-        form = CreateReviewForm()
-        context = {'form':form, 'reviews':reviews, 'car_makes': car_makes, 'car_model': car_models}
-        return render(request, 'djangoapp/add_review.html', context)
+    return redirect('djangoapp:index')
 
